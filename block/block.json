@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "bmlt-enabled-stats/stats-display",
+    "version": "1.0.0",
+    "title": "BMLT Stats",
+    "category": "widgets",
+    "icon": "chart-bar",
+    "description": "Display BMLT Enabled project statistics with engaging visuals.",
+    "keywords": [
+        "bmlt",
+        "stats",
+        "statistics",
+        "meetings",
+        "github"
+    ],
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "textdomain": "bmlt-enabled-stats",
+    "attributes": {
+        "displayType": {
+            "type": "string",
+            "default": "full"
+        },
+        "theme": {
+            "type": "string",
+            "default": "default"
+        }
+    },
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:../assets/css/stats-display.css"
+}

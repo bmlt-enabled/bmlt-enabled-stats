@@ -1,0 +1,117 @@
+/**
+ * BMLT Stats Block - Editor Styles
+ */
+
+.blst-block-preview {
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.blst-block-content {
+    padding: 20px;
+}
+
+.blst-block-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.blst-block-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #0073aa;
+    color: #fff;
+    border-radius: 6px;
+}
+
+.blst-block-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.blst-block-type {
+    margin-left: auto;
+    font-size: 12px;
+    color: #757575;
+    background: #f0f0f1;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.blst-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+}
+
+.blst-preview-card {
+    background: #f6f7f7;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+}
+
+.blst-preview-number {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1.2;
+}
+
+.blst-preview-label {
+    display: block;
+    font-size: 12px;
+    color: #757575;
+    margin-top: 4px;
+}
+
+/* Dark theme preview */
+.blst-block-preview.blst-theme-dark {
+    background: #1a1a2e;
+    border-color: #0f3460;
+}
+
+.blst-theme-dark .blst-block-header {
+    border-color: #0f3460;
+}
+
+.blst-theme-dark .blst-block-title {
+    color: #fff;
+}
+
+.blst-theme-dark .blst-block-type {
+    background: #16213e;
+    color: #a0a0a0;
+}
+
+.blst-theme-dark .blst-preview-card {
+    background: #16213e;
+}
+
+.blst-theme-dark .blst-preview-number {
+    color: #fff;
+}
+
+.blst-theme-dark .blst-preview-label {
+    color: #a0a0a0;
+}
+
+/* Compact theme preview */
+.blst-theme-compact .blst-preview-card {
+    padding: 12px;
+}
+
+.blst-theme-compact .blst-preview-number {
+    font-size: 22px;
+}

@@ -1,0 +1,24 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build artifacts
+/build/
+
+# Composer
+composer.lock
+
+# IDE
+.idea/
+*.swp
+*.swo
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local development
+.env
+*.log
+.claude

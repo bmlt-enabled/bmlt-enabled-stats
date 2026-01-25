@@ -1,0 +1,75 @@
+name: 'Build'
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ 'main' ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out code 🛒
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 🐫
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies 📦
+        run: composer install --prefer-dist --no-progress
+
+      - name: PHPCS checker 🧹
+        run: composer lint
+
+  build:
+    needs: [ lint ]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out code 🛒
+        uses: actions/checkout@v4
+
+      - name: Build plugin zip 📦
+        run: |
+          export PLUGIN_NAME="bmlt-enabled-stats"
+          export BUILD_DIR="build"
+          export ZIP_FILENAME="${PLUGIN_NAME}-build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}.zip"
+
+          mkdir -p ${BUILD_DIR}/${PLUGIN_NAME}
+
+          # Copy plugin files
+          cp -r admin ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp -r assets ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp -r block ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp -r includes ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp -r templates ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp bmlt-enabled-stats.php ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp readme.txt ${BUILD_DIR}/${PLUGIN_NAME}/
+          cp uninstall.php ${BUILD_DIR}/${PLUGIN_NAME}/
+
+          # Create zip
+          cd ${BUILD_DIR}
+          zip -r ${ZIP_FILENAME} ${PLUGIN_NAME}
+
+          echo "ZIP_FILENAME=${ZIP_FILENAME}" >> $GITHUB_ENV
+          echo "Built: ${ZIP_FILENAME}"
+
+      - name: Upload artifact 📤
+        uses: actions/upload-artifact@v4
+        with:
+          name: bmlt-enabled-stats
+          path: build/*.zip
+          retention-days: 30
