@@ -22,3 +22,7 @@ Thumbs.db
 .env
 *.log
 .claude
+
+# Test artifacts
+coverage.xml
+.phpunit.result.cache
