@@ -17,7 +17,6 @@ BMLT Enabled Stats provides a beautiful, modern dashboard displaying statistics 
 
 **Features:**
 
-* **BMLT Meeting Statistics** - Display total meetings worldwide, root servers, groups, regions, and zones from the BMLT Tomato aggregator
 * **GitHub Repository Stats** - Show stars, forks, and activity across all bmlt-enabled repositories
 * **WordPress Plugin Stats** - Display downloads, active installs, and ratings for BMLT WordPress plugins
 * **Animated Counters** - Numbers animate when they come into view
