@@ -116,14 +116,20 @@ $total_release_downloads = $github_stats['total_release_downloads'] ?? 0;
 				<canvas id="blst-github-forks-chart"></canvas>
 			</div>
 		</div>
-		<?php if ( ! empty( $github_stats['release_downloads'] ) ) : ?>
 		<div class="blst-charts-row">
+			<?php if ( ! empty( $github_stats['release_downloads'] ) ) : ?>
 			<div class="blst-chart-container blst-chart-fixed-height">
 				<h3 class="blst-chart-title"><?php esc_html_e( 'Release Downloads by Repository', 'bmlt-enabled-stats' ); ?></h3>
 				<canvas id="blst-github-downloads-chart"></canvas>
 			</div>
+			<?php endif; ?>
+			<?php if ( ! empty( $github_stats['languages'] ) ) : ?>
+			<div class="blst-chart-container blst-chart-fixed-height">
+				<h3 class="blst-chart-title"><?php esc_html_e( 'Languages Used', 'bmlt-enabled-stats' ); ?></h3>
+				<canvas id="blst-languages-chart"></canvas>
+			</div>
+			<?php endif; ?>
 		</div>
-		<?php endif; ?>
 	</section>
 	<?php endif; ?>
 
@@ -217,6 +223,8 @@ if ( empty( $top_by_forks ) && ! empty( $github_stats['top_repos'] ) ) {
 $top_by_forks    = array_slice( $top_by_forks, 0, 8 );
 $release_dl_data = array_slice( $github_stats['release_downloads'] ?? array(), 0, 8 );
 
+$languages_data = array_slice( $github_stats['languages'] ?? array(), 0, 10, true );
+
 echo wp_json_encode(
 	array(
 		'github'    => array(
@@ -226,6 +234,8 @@ echo wp_json_encode(
 			'forks'          => array_column( $top_by_forks, 'forks' ),
 			'downloadsRepos' => array_column( $release_dl_data, 'name' ),
 			'downloads'      => array_column( $release_dl_data, 'downloads' ),
+			'languages'      => array_keys( $languages_data ),
+			'languageCounts' => array_values( $languages_data ),
 		),
 		'wordpress' => array(
 			'plugins'   => array_column( $wp_stats['plugins'] ?? array(), 'display_name' ),
