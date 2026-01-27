@@ -137,6 +137,9 @@
             if (data.github.downloads && data.github.downloads.length) {
                 createGitHubDownloadsChart(data.github);
             }
+            if (data.github.languages && data.github.languages.length) {
+                createLanguagesChart(data.github);
+            }
         }
 
         // WordPress charts
@@ -318,6 +321,54 @@
                     y: {
                         grid: {
                             display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create languages doughnut chart
+     */
+    function createLanguagesChart(data) {
+        var canvas = document.getElementById('blst-languages-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.languages,
+                datasets: [{
+                    data: data.languageCounts,
+                    backgroundColor: chartColors.slice(0, data.languages.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 8,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                var percentage = Math.round((context.parsed / total) * 100);
+                                return context.label + ': ' + context.parsed + ' repos (' + percentage + '%)';
+                            }
                         }
                     }
                 }
