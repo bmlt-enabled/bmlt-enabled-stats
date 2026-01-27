@@ -81,7 +81,7 @@ build: clean ## Build plugin zip file
 	@find $(BUILD_DIR)/$(PLUGIN_NAME) -name '*.swo' -delete 2>/dev/null || true
 
 	@# Create zip file
-	@cd $(BUILD_DIR) && zip -r $(ZIP_FILENAME) $(PLUGIN_NAME)
+	@cd $(BUILD_DIR)/$(PLUGIN_NAME) && zip -r ../$(ZIP_FILENAME) .
 	@echo "Built: $(BUILD_DIR)/$(ZIP_FILENAME)"
 
 clean: ## Clean build artifacts
