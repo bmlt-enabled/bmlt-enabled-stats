@@ -115,13 +115,25 @@ use BLST\Shortcodes;
 	</section>
 	<?php endif; ?>
 
-	<!-- Chart -->
+	<!-- Charts -->
 	<div class="blst-charts-row">
-		<div class="blst-chart-container blst-chart-wide">
+		<div class="blst-chart-container blst-chart-fixed-height">
 			<h3 class="blst-chart-title"><?php esc_html_e( 'Stars by Repository', 'bmlt-enabled-stats' ); ?></h3>
 			<canvas id="blst-github-stars-chart"></canvas>
 		</div>
+		<div class="blst-chart-container blst-chart-fixed-height">
+			<h3 class="blst-chart-title"><?php esc_html_e( 'Forks by Repository', 'bmlt-enabled-stats' ); ?></h3>
+			<canvas id="blst-github-forks-chart"></canvas>
+		</div>
 	</div>
+	<?php if ( ! empty( $stats['release_downloads'] ) ) : ?>
+	<div class="blst-charts-row">
+		<div class="blst-chart-container blst-chart-fixed-height">
+			<h3 class="blst-chart-title"><?php esc_html_e( 'Release Downloads by Repository', 'bmlt-enabled-stats' ); ?></h3>
+			<canvas id="blst-github-downloads-chart"></canvas>
+		</div>
+	</div>
+	<?php endif; ?>
 
 	<footer class="blst-footer blst-footer-inline">
 		<a href="https://github.com/bmlt-enabled" class="blst-github-link" target="_blank" rel="noopener noreferrer">
@@ -135,11 +147,30 @@ use BLST\Shortcodes;
 <!-- Chart Data -->
 <script type="application/json" id="blst-chart-data">
 <?php
+// Prepare forks data sorted by forks (with fallback for cached data).
+$top_by_forks = $stats['top_repos_by_forks'] ?? array();
+if ( empty( $top_by_forks ) && ! empty( $stats['top_repos'] ) ) {
+	// Fallback: sort top_repos by forks for cached data without top_repos_by_forks.
+	$top_by_forks = $stats['top_repos'];
+	usort(
+		$top_by_forks,
+		function ( $a, $b ) {
+			return ( $b['forks'] ?? 0 ) - ( $a['forks'] ?? 0 );
+		}
+	);
+}
+$top_by_forks    = array_slice( $top_by_forks, 0, 8 );
+$release_dl_data = array_slice( $stats['release_downloads'] ?? array(), 0, 8 );
+
 echo wp_json_encode(
 	array(
 		'github' => array(
-			'repos' => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'name' ),
-			'stars' => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'stars' ),
+			'repos'          => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'name' ),
+			'stars'          => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'stars' ),
+			'forksRepos'     => array_column( $top_by_forks, 'name' ),
+			'forks'          => array_column( $top_by_forks, 'forks' ),
+			'downloadsRepos' => array_column( $release_dl_data, 'name' ),
+			'downloads'      => array_column( $release_dl_data, 'downloads' ),
 		),
 	)
 );

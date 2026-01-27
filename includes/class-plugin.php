@@ -222,11 +222,12 @@ class Plugin {
 		$bmlt      = $this->bmlt_api->get_stats();
 
 		return array(
-			'total_github_stars'    => $github['total_stars'] ?? 0,
-			'total_forks'           => $github['total_forks'] ?? 0,
-			'total_downloads'       => $wordpress['total_downloads'] ?? 0,
-			'total_active_installs' => $wordpress['total_active_installs'] ?? 0,
-			'total_repos'           => $github['total_repos'] ?? 0,
+			'total_github_stars'      => $github['total_stars'] ?? 0,
+			'total_forks'             => $github['total_forks'] ?? 0,
+			'total_downloads'         => $wordpress['total_downloads'] ?? 0,
+			'total_active_installs'   => $wordpress['total_active_installs'] ?? 0,
+			'total_repos'             => $github['total_repos'] ?? 0,
+			'total_release_downloads' => $github['total_release_downloads'] ?? 0,
 		);
 	}
 }

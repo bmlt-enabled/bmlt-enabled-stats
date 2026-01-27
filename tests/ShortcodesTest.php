@@ -7,8 +7,6 @@
 
 namespace BLST\Tests;
 
-use PHPUnit\Framework\TestCase;
-
 /**
  * Test the Shortcodes utility methods.
  */

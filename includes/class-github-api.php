@@ -185,25 +185,43 @@ class GitHub_API {
 		// Sort languages by count.
 		arsort( $languages );
 
-		// Get top repos (non-archived).
-		$top_repos = array_filter(
-			$processed_repos,
-			function ( $repo ) {
-				return ! $repo['archived'];
+		// Get top repos by stars (non-archived).
+		$active_repos = array_values(
+			array_filter(
+				$processed_repos,
+				function ( $repo ) {
+					return ! $repo['archived'];
+				}
+			)
+		);
+		$top_repos    = array_slice( $active_repos, 0, 10 );
+
+		// Get top repos by forks.
+		$repos_by_forks = $active_repos;
+		usort(
+			$repos_by_forks,
+			function ( $a, $b ) {
+				return $b['forks'] - $a['forks'];
 			}
 		);
-		$top_repos = array_slice( $top_repos, 0, 10 );
+		$top_repos_by_forks = array_slice( $repos_by_forks, 0, 10 );
+
+		// Fetch release downloads for top repos.
+		$release_data = $this->fetch_release_downloads( $processed_repos );
 
 		return array(
-			'total_repos'        => count( $processed_repos ),
-			'total_stars'        => $total_stars,
-			'total_forks'        => $total_forks,
-			'total_open_issues'  => $total_open_issues,
-			'total_contributors' => $this->get_contributor_count(),
-			'languages'          => $languages,
-			'top_repos'          => $top_repos,
-			'all_repos'          => $processed_repos,
-			'fetched_at'         => current_time( 'mysql' ),
+			'total_repos'             => count( $processed_repos ),
+			'total_stars'             => $total_stars,
+			'total_forks'             => $total_forks,
+			'total_open_issues'       => $total_open_issues,
+			'total_contributors'      => $this->get_contributor_count(),
+			'total_release_downloads' => $release_data['total'],
+			'release_downloads'       => $release_data['per_repo'],
+			'languages'               => $languages,
+			'top_repos'               => $top_repos,
+			'top_repos_by_forks'      => $top_repos_by_forks,
+			'all_repos'               => $processed_repos,
+			'fetched_at'              => current_time( 'mysql' ),
 		);
 	}
 
@@ -290,16 +308,82 @@ class GitHub_API {
 	 */
 	private function get_empty_stats() {
 		return array(
-			'total_repos'        => 0,
-			'total_stars'        => 0,
-			'total_forks'        => 0,
-			'total_open_issues'  => 0,
-			'total_contributors' => 0,
-			'languages'          => array(),
-			'top_repos'          => array(),
-			'all_repos'          => array(),
-			'fetched_at'         => null,
-			'error'              => true,
+			'total_repos'             => 0,
+			'total_stars'             => 0,
+			'total_forks'             => 0,
+			'total_open_issues'       => 0,
+			'total_contributors'      => 0,
+			'total_release_downloads' => 0,
+			'release_downloads'       => array(),
+			'languages'               => array(),
+			'top_repos'               => array(),
+			'top_repos_by_forks'      => array(),
+			'all_repos'               => array(),
+			'fetched_at'              => null,
+			'error'                   => true,
+		);
+	}
+
+	/**
+	 * Fetch release downloads for repos
+	 *
+	 * Limited to top 10 repos to avoid excessive API calls.
+	 *
+	 * @param array $repos List of repos to fetch downloads for.
+	 * @return array Array with 'total' count and 'per_repo' breakdown.
+	 */
+	private function fetch_release_downloads( $repos ) {
+		$total    = 0;
+		$per_repo = array();
+
+		// Limit to top 10 repos to avoid rate limiting.
+		$repos_to_check = array_slice( $repos, 0, 10 );
+
+		foreach ( $repos_to_check as $repo ) {
+			$url      = self::API_BASE . '/repos/' . self::ORG_NAME . '/' . $repo['name'] . '/releases';
+			$response = $this->make_request( $url );
+
+			if ( is_wp_error( $response ) ) {
+				continue;
+			}
+
+			$releases = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( ! is_array( $releases ) ) {
+				continue;
+			}
+
+			$repo_downloads = 0;
+			foreach ( $releases as $release ) {
+				if ( ! isset( $release['assets'] ) || ! is_array( $release['assets'] ) ) {
+					continue;
+				}
+
+				foreach ( $release['assets'] as $asset ) {
+					$repo_downloads += $asset['download_count'] ?? 0;
+				}
+			}
+
+			if ( $repo_downloads > 0 ) {
+				$per_repo[] = array(
+					'name'      => $repo['name'],
+					'downloads' => $repo_downloads,
+				);
+				$total     += $repo_downloads;
+			}
+		}
+
+		// Sort by downloads descending.
+		usort(
+			$per_repo,
+			function ( $a, $b ) {
+				return $b['downloads'] - $a['downloads'];
+			}
+		);
+
+		return array(
+			'total'    => $total,
+			'per_repo' => $per_repo,
 		);
 	}
 

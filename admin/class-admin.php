@@ -250,36 +250,79 @@ class Admin {
 				<h2><?php esc_html_e( 'Current Stats Preview', 'bmlt-enabled-stats' ); ?></h2>
 
 				<h3><?php esc_html_e( 'GitHub Stats', 'bmlt-enabled-stats' ); ?></h3>
-				<table class="widefat fixed">
+				<p style="font-size: 14px; margin: 10px 0;">
+					<strong><?php esc_html_e( 'Repos:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( $github_stats['total_repos'] ?? 0 ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Stars:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( number_format( $github_stats['total_stars'] ?? 0 ) ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Forks:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( number_format( $github_stats['total_forks'] ?? 0 ) ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Downloads:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( number_format( $github_stats['total_release_downloads'] ?? 0 ) ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Issues:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( number_format( $github_stats['total_open_issues'] ?? 0 ) ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Contributors:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( $github_stats['total_contributors'] ?? 0 ); ?>
+				</p>
+
+				<p style="font-size: 13px; margin: 5px 0;">
+					<strong><?php esc_html_e( 'Top by Stars:', 'bmlt-enabled-stats' ); ?></strong>
+					<?php
+					$top_repos = $github_stats['top_repos'] ?? array();
+					if ( ! empty( $top_repos ) ) {
+						$repo_names = array_column( array_slice( $top_repos, 0, 5 ), 'name' );
+						echo esc_html( implode( ', ', $repo_names ) );
+					} else {
+						esc_html_e( 'No data', 'bmlt-enabled-stats' );
+					}
+					?>
+				</p>
+
+				<p style="font-size: 13px; margin: 5px 0;">
+					<strong><?php esc_html_e( 'Top by Forks:', 'bmlt-enabled-stats' ); ?></strong>
+					<?php
+					$top_by_forks = $github_stats['top_repos_by_forks'] ?? array();
+					if ( ! empty( $top_by_forks ) ) {
+						$fork_repo_names = array_column( array_slice( $top_by_forks, 0, 5 ), 'name' );
+						echo esc_html( implode( ', ', $fork_repo_names ) );
+					} else {
+						esc_html_e( 'No data', 'bmlt-enabled-stats' );
+					}
+					?>
+				</p>
+
+				<p style="font-size: 13px; margin: 5px 0;">
+					<strong><?php esc_html_e( 'Languages:', 'bmlt-enabled-stats' ); ?></strong>
+					<?php
+					$languages = $github_stats['languages'] ?? array();
+					if ( ! empty( $languages ) ) {
+						$lang_list = array();
+						foreach ( array_slice( $languages, 0, 5, true ) as $lang => $count ) {
+							$lang_list[] = $lang . ' (' . $count . ')';
+						}
+						echo esc_html( implode( ', ', $lang_list ) );
+					} else {
+						esc_html_e( 'No data', 'bmlt-enabled-stats' );
+					}
+					?>
+				</p>
+
+				<?php
+				$release_downloads = $github_stats['release_downloads'] ?? array();
+				if ( ! empty( $release_downloads ) ) :
+					?>
+				<h4 style="margin-top: 15px;"><?php esc_html_e( 'Release Downloads by Repository', 'bmlt-enabled-stats' ); ?></h4>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Repository', 'bmlt-enabled-stats' ); ?></th>
+							<th><?php esc_html_e( 'Downloads', 'bmlt-enabled-stats' ); ?></th>
+						</tr>
+					</thead>
 					<tbody>
+						<?php foreach ( array_slice( $release_downloads, 0, 10 ) as $repo ) : ?>
 						<tr>
-							<td><strong><?php esc_html_e( 'Total Repositories', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td><?php echo esc_html( $github_stats['total_repos'] ?? 0 ); ?></td>
+							<td><?php echo esc_html( $repo['name'] ); ?></td>
+							<td><?php echo esc_html( number_format( $repo['downloads'] ) ); ?></td>
 						</tr>
-						<tr>
-							<td><strong><?php esc_html_e( 'Total Stars', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td><?php echo esc_html( $github_stats['total_stars'] ?? 0 ); ?></td>
-						</tr>
-						<tr>
-							<td><strong><?php esc_html_e( 'Total Forks', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td><?php echo esc_html( $github_stats['total_forks'] ?? 0 ); ?></td>
-						</tr>
-						<tr>
-							<td><strong><?php esc_html_e( 'Top Repos', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td>
-								<?php
-								$top_repos = $github_stats['top_repos'] ?? array();
-								if ( ! empty( $top_repos ) ) {
-									$repo_names = array_column( array_slice( $top_repos, 0, 5 ), 'name' );
-									echo esc_html( implode( ', ', $repo_names ) );
-								} else {
-									esc_html_e( 'No data', 'bmlt-enabled-stats' );
-								}
-								?>
-							</td>
-						</tr>
+						<?php endforeach; ?>
 					</tbody>
 				</table>
+				<?php endif; ?>
 
 				<h3 style="margin-top: 20px;"><?php esc_html_e( 'WordPress Plugin Stats', 'bmlt-enabled-stats' ); ?></h3>
 				<?php
@@ -288,37 +331,25 @@ class Admin {
 					$debug_url = 'https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[author]=bmltenabled&request[per_page]=10';
 					echo '<p><small>Debug API URL: <a href="' . esc_url( $debug_url ) . '" target="_blank">' . esc_html( $debug_url ) . '</a></small></p>';
 				}
+				$plugins = $wp_stats['plugins'] ?? array();
 				?>
-				<table class="widefat fixed">
-					<tbody>
-						<tr>
-							<td><strong><?php esc_html_e( 'Total Plugins Found', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td><?php echo esc_html( $wp_stats['plugin_count'] ?? 0 ); ?></td>
-						</tr>
-						<tr>
-							<td><strong><?php esc_html_e( 'Total Downloads', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td><?php echo esc_html( number_format( $wp_stats['total_downloads'] ?? 0 ) ); ?></td>
-						</tr>
-						<tr>
-							<td><strong><?php esc_html_e( 'Total Active Installs', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td><?php echo esc_html( number_format( $wp_stats['total_active_installs'] ?? 0 ) ); ?></td>
-						</tr>
-						<tr>
-							<td><strong><?php esc_html_e( 'Plugins', 'bmlt-enabled-stats' ); ?></strong></td>
-							<td>
-								<?php
-								$plugins = $wp_stats['plugins'] ?? array();
-								if ( ! empty( $plugins ) ) {
-									$plugin_names = array_column( $plugins, 'name' );
-									echo esc_html( implode( ', ', $plugin_names ) );
-								} else {
-									esc_html_e( 'No plugins found', 'bmlt-enabled-stats' );
-								}
-								?>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+				<p style="font-size: 14px; margin: 10px 0;">
+					<strong><?php esc_html_e( 'Plugins:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( $wp_stats['plugin_count'] ?? 0 ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Downloads:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( number_format( $wp_stats['total_downloads'] ?? 0 ) ); ?> &nbsp;|&nbsp;
+					<strong><?php esc_html_e( 'Active Installs:', 'bmlt-enabled-stats' ); ?></strong> <?php echo esc_html( number_format( $wp_stats['total_active_installs'] ?? 0 ) ); ?>
+				</p>
+
+				<p style="font-size: 13px; margin: 5px 0;">
+					<strong><?php esc_html_e( 'Plugin Names:', 'bmlt-enabled-stats' ); ?></strong>
+					<?php
+					if ( ! empty( $plugins ) ) {
+						$plugin_names = array_column( $plugins, 'name' );
+						echo esc_html( implode( ', ', $plugin_names ) );
+					} else {
+						esc_html_e( 'No plugins found', 'bmlt-enabled-stats' );
+					}
+					?>
+				</p>
 
 				<?php if ( ! empty( $plugins ) ) : ?>
 				<h4 style="margin-top: 15px;"><?php esc_html_e( 'Plugin Details', 'bmlt-enabled-stats' ); ?></h4>

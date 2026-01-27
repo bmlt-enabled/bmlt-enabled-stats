@@ -5,8 +5,11 @@
  * @package BMLT_Enabled_Stats
  */
 
-// Composer autoloader.
+// Composer autoloader (includes Brain Monkey).
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+
+// Load our base test case.
+require_once __DIR__ . '/TestCase.php';
 
 // Define constants that WordPress would normally define.
 if ( ! defined( 'ABSPATH' ) ) {
