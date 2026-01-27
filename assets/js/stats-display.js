@@ -128,15 +128,21 @@
         // Set default font
         Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-        // GitHub stars chart
+        // GitHub charts
         if (data.github && data.github.repos && data.github.repos.length) {
             createGitHubChart(data.github);
+            if (data.github.forks && data.github.forks.length) {
+                createGitHubForksChart(data.github);
+            }
+            if (data.github.downloads && data.github.downloads.length) {
+                createGitHubDownloadsChart(data.github);
+            }
         }
 
-        // WordPress installs chart
+        // WordPress charts
         if (data.wordpress && data.wordpress.plugins && data.wordpress.plugins.length) {
             createWordPressInstallsChart(data.wordpress);
-            createWordPressDownloadsChart(data.wordpress);
+            createWordPressDownloadsBarChart(data.wordpress);
         }
     }
 
@@ -173,6 +179,126 @@
                         callbacks: {
                             label: function(context) {
                                 return context.parsed.x.toLocaleString() + ' stars';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create GitHub forks horizontal bar chart
+     */
+    function createGitHubForksChart(data) {
+        var canvas = document.getElementById('blst-github-forks-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        var labels = data.forksRepos || data.repos;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Forks',
+                    data: data.forks,
+                    backgroundColor: chartColors.slice(0, labels.length),
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x.toLocaleString() + ' forks';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create GitHub release downloads horizontal bar chart
+     */
+    function createGitHubDownloadsChart(data) {
+        var canvas = document.getElementById('blst-github-downloads-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        var labels = data.downloadsRepos || [];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Downloads',
+                    data: data.downloads,
+                    backgroundColor: chartColors.slice(0, labels.length),
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x.toLocaleString() + ' downloads';
                             }
                         }
                     }
@@ -265,48 +391,72 @@
     }
 
     /**
-     * Create WordPress downloads doughnut chart
+     * Create WordPress downloads horizontal bar chart
      */
-    function createWordPressDownloadsChart(data) {
-        var canvas = document.getElementById('blst-wp-downloads-chart');
+    function createWordPressDownloadsBarChart(data) {
+        var canvas = document.getElementById('blst-wp-downloads-bar-chart');
         if (!canvas) return;
 
         var ctx = canvas.getContext('2d');
 
+        // Sort by downloads descending
+        var combined = data.plugins.map(function(plugin, i) {
+            return { name: plugin, downloads: data.downloads[i] };
+        });
+        combined.sort(function(a, b) { return b.downloads - a.downloads; });
+
         new Chart(ctx, {
-            type: 'doughnut',
+            type: 'bar',
             data: {
-                labels: data.plugins,
+                labels: combined.map(function(item) { return item.name; }),
                 datasets: [{
-                    data: data.downloads,
-                    backgroundColor: chartColors.slice(0, data.plugins.length),
-                    borderWidth: 2,
-                    borderColor: '#fff'
+                    label: 'Downloads',
+                    data: combined.map(function(item) { return item.downloads; }),
+                    backgroundColor: chartColors.slice(0, combined.length),
+                    borderRadius: 4,
+                    borderSkipped: false
                 }]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
-                        labels: {
-                            padding: 12,
-                            usePointStyle: true,
-                            pointStyle: 'circle'
-                        }
+                        display: false
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
-                                var percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return context.label + ': ' + context.parsed.toLocaleString() + ' (' + percentage + '%)';
+                                return context.parsed.x.toLocaleString() + ' downloads';
                             }
                         }
                     }
                 },
-                cutout: '60%'
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                }
+                                if (value >= 1000) {
+                                    return (value / 1000).toFixed(0) + 'K';
+                                }
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
             }
         });
     }

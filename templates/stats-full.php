@@ -21,11 +21,12 @@ $github_stats = $stats['github'] ?? array();
 $wp_stats     = $stats['wordpress'] ?? array();
 
 // Calculate totals for summary.
-$total_stars     = $github_stats['total_stars'] ?? 0;
-$total_forks     = $github_stats['total_forks'] ?? 0;
-$total_downloads = $wp_stats['total_downloads'] ?? 0;
-$total_active    = $wp_stats['total_active_installs'] ?? 0;
-$total_repos     = $github_stats['total_repos'] ?? 0;
+$total_stars             = $github_stats['total_stars'] ?? 0;
+$total_forks             = $github_stats['total_forks'] ?? 0;
+$total_downloads         = $wp_stats['total_downloads'] ?? 0;
+$total_active            = $wp_stats['total_active_installs'] ?? 0;
+$total_repos             = $github_stats['total_repos'] ?? 0;
+$total_release_downloads = $github_stats['total_release_downloads'] ?? 0;
 ?>
 
 <div class="blst-stats-container blst-theme-<?php echo esc_attr( $theme ); ?>">
@@ -82,6 +83,18 @@ $total_repos     = $github_stats['total_repos'] ?? 0;
 					<span class="blst-stat-label"><?php esc_html_e( 'GitHub Forks', 'bmlt-enabled-stats' ); ?></span>
 				</div>
 			</div>
+
+			<?php if ( $total_release_downloads > 0 ) : ?>
+			<div class="blst-hero-card blst-card-releases">
+				<div class="blst-card-icon">
+					<svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 010 2.474l-5.026 5.026a1.75 1.75 0 01-2.474 0l-6.25-6.25A1.75 1.75 0 011 7.775zm1.5 0c0 .066.026.13.073.177l6.25 6.25a.25.25 0 00.354 0l5.025-5.025a.25.25 0 000-.354l-6.25-6.25a.25.25 0 00-.177-.073H2.75a.25.25 0 00-.25.25zM6 5a1 1 0 110 2 1 1 0 010-2z"/></svg>
+				</div>
+				<div class="blst-card-content">
+					<span class="blst-stat-number" data-count="<?php echo esc_attr( $total_release_downloads ); ?>"><?php echo esc_html( Shortcodes::format_number( $total_release_downloads ) ); ?></span>
+					<span class="blst-stat-label"><?php esc_html_e( 'Release Downloads', 'bmlt-enabled-stats' ); ?></span>
+				</div>
+			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 
@@ -98,7 +111,19 @@ $total_repos     = $github_stats['total_repos'] ?? 0;
 				<h3 class="blst-chart-title"><?php esc_html_e( 'Stars by Repository', 'bmlt-enabled-stats' ); ?></h3>
 				<canvas id="blst-github-stars-chart"></canvas>
 			</div>
+			<div class="blst-chart-container blst-chart-fixed-height">
+				<h3 class="blst-chart-title"><?php esc_html_e( 'Forks by Repository', 'bmlt-enabled-stats' ); ?></h3>
+				<canvas id="blst-github-forks-chart"></canvas>
+			</div>
 		</div>
+		<?php if ( ! empty( $github_stats['release_downloads'] ) ) : ?>
+		<div class="blst-charts-row">
+			<div class="blst-chart-container blst-chart-fixed-height">
+				<h3 class="blst-chart-title"><?php esc_html_e( 'Release Downloads by Repository', 'bmlt-enabled-stats' ); ?></h3>
+				<canvas id="blst-github-downloads-chart"></canvas>
+			</div>
+		</div>
+		<?php endif; ?>
 	</section>
 	<?php endif; ?>
 
@@ -110,7 +135,19 @@ $total_repos     = $github_stats['total_repos'] ?? 0;
 			<?php esc_html_e( 'WordPress Plugins', 'bmlt-enabled-stats' ); ?>
 		</h2>
 
-		<div class="blst-plugin-grid">
+		<!-- WordPress Charts -->
+		<div class="blst-charts-row">
+			<div class="blst-chart-container blst-chart-fixed-height">
+				<h3 class="blst-chart-title"><?php esc_html_e( 'Active Installs by Plugin', 'bmlt-enabled-stats' ); ?></h3>
+				<canvas id="blst-wp-installs-chart"></canvas>
+			</div>
+			<div class="blst-chart-container blst-chart-fixed-height">
+				<h3 class="blst-chart-title"><?php esc_html_e( 'Downloads by Plugin', 'bmlt-enabled-stats' ); ?></h3>
+				<canvas id="blst-wp-downloads-bar-chart"></canvas>
+			</div>
+		</div>
+
+		<div class="blst-plugin-grid" style="margin-top: 2rem;">
 			<?php foreach ( $wp_stats['plugins'] as $wp_plugin ) : ?>
 			<div class="blst-plugin-card">
 				<div class="blst-plugin-header">
@@ -140,18 +177,6 @@ $total_repos     = $github_stats['total_repos'] ?? 0;
 			</div>
 			<?php endforeach; ?>
 		</div>
-
-		<!-- WordPress Charts -->
-		<div class="blst-charts-row">
-			<div class="blst-chart-container blst-chart-fixed-height">
-				<h3 class="blst-chart-title"><?php esc_html_e( 'Active Installs by Plugin', 'bmlt-enabled-stats' ); ?></h3>
-				<canvas id="blst-wp-installs-chart"></canvas>
-			</div>
-			<div class="blst-chart-container blst-chart-fixed-height">
-				<h3 class="blst-chart-title"><?php esc_html_e( 'Download Distribution', 'bmlt-enabled-stats' ); ?></h3>
-				<canvas id="blst-wp-downloads-chart"></canvas>
-			</div>
-		</div>
 	</section>
 	<?php endif; ?>
 
@@ -177,11 +202,30 @@ $total_repos     = $github_stats['total_repos'] ?? 0;
 <!-- Chart Data -->
 <script type="application/json" id="blst-chart-data">
 <?php
+// Prepare forks data sorted by forks (with fallback for cached data).
+$top_by_forks = $github_stats['top_repos_by_forks'] ?? array();
+if ( empty( $top_by_forks ) && ! empty( $github_stats['top_repos'] ) ) {
+	// Fallback: sort top_repos by forks for cached data without top_repos_by_forks.
+	$top_by_forks = $github_stats['top_repos'];
+	usort(
+		$top_by_forks,
+		function ( $a, $b ) {
+			return ( $b['forks'] ?? 0 ) - ( $a['forks'] ?? 0 );
+		}
+	);
+}
+$top_by_forks    = array_slice( $top_by_forks, 0, 8 );
+$release_dl_data = array_slice( $github_stats['release_downloads'] ?? array(), 0, 8 );
+
 echo wp_json_encode(
 	array(
 		'github'    => array(
-			'repos' => array_column( array_slice( $github_stats['top_repos'] ?? array(), 0, 8 ), 'name' ),
-			'stars' => array_column( array_slice( $github_stats['top_repos'] ?? array(), 0, 8 ), 'stars' ),
+			'repos'          => array_column( array_slice( $github_stats['top_repos'] ?? array(), 0, 8 ), 'name' ),
+			'stars'          => array_column( array_slice( $github_stats['top_repos'] ?? array(), 0, 8 ), 'stars' ),
+			'forksRepos'     => array_column( $top_by_forks, 'name' ),
+			'forks'          => array_column( $top_by_forks, 'forks' ),
+			'downloadsRepos' => array_column( $release_dl_data, 'name' ),
+			'downloads'      => array_column( $release_dl_data, 'downloads' ),
 		),
 		'wordpress' => array(
 			'plugins'   => array_column( $wp_stats['plugins'] ?? array(), 'display_name' ),
