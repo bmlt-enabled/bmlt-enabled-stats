@@ -140,6 +140,44 @@ use BLST\Shortcodes;
 		</div>
 		<?php endif; ?>
 	</div>
+	<?php
+	// Check if any repos have open issues for the chart.
+	$has_open_issues = false;
+	foreach ( $stats['top_repos'] ?? array() as $repo ) {
+		if ( ( $repo['open_issues'] ?? 0 ) > 0 ) {
+			$has_open_issues = true;
+			break;
+		}
+	}
+	?>
+	<?php if ( $has_open_issues || ! empty( $stats['closed_issues_by_repo'] ) ) : ?>
+	<div class="blst-charts-row">
+		<?php if ( $has_open_issues ) : ?>
+		<div class="blst-chart-container blst-chart-fixed-height">
+			<h3 class="blst-chart-title"><?php esc_html_e( 'Open Issues by Repository', 'bmlt-enabled-stats' ); ?></h3>
+			<canvas id="blst-open-issues-chart"></canvas>
+		</div>
+		<?php endif; ?>
+		<?php if ( ! empty( $stats['closed_issues_by_repo'] ) ) : ?>
+		<div class="blst-chart-container blst-chart-fixed-height">
+			<h3 class="blst-chart-title"><?php esc_html_e( 'Open vs Closed Issues', 'bmlt-enabled-stats' ); ?></h3>
+			<canvas id="blst-open-vs-closed-chart"></canvas>
+		</div>
+		<?php endif; ?>
+	</div>
+	<?php endif; ?>
+	<?php if ( ! empty( $stats['top_contributors'] ) ) : ?>
+	<div class="blst-charts-row">
+		<div class="blst-chart-container blst-chart-fixed-height">
+			<h3 class="blst-chart-title"><?php esc_html_e( 'Top Contributors by Lines Changed', 'bmlt-enabled-stats' ); ?></h3>
+			<canvas id="blst-contributors-chart"></canvas>
+		</div>
+		<div class="blst-chart-container blst-chart-fixed-height">
+			<h3 class="blst-chart-title"><?php esc_html_e( 'Top Contributors by Commits', 'bmlt-enabled-stats' ); ?></h3>
+			<canvas id="blst-commits-chart"></canvas>
+		</div>
+	</div>
+	<?php endif; ?>
 
 	<footer class="blst-footer blst-footer-inline">
 		<a href="https://github.com/bmlt-enabled" class="blst-github-link" target="_blank" rel="noopener noreferrer">
@@ -169,17 +207,64 @@ $top_by_forks    = array_slice( $top_by_forks, 0, 8 );
 $release_dl_data = array_slice( $stats['release_downloads'] ?? array(), 0, 8 );
 $languages_data  = array_slice( $stats['languages'] ?? array(), 0, 10, true );
 
+// Prepare issues data sorted by open_issues descending.
+$repos_by_issues = $stats['top_repos'] ?? array();
+usort(
+	$repos_by_issues,
+	function ( $a, $b ) {
+		return ( $b['open_issues'] ?? 0 ) - ( $a['open_issues'] ?? 0 );
+	}
+);
+// Filter out repos with zero issues.
+$repos_by_issues = array_filter(
+	$repos_by_issues,
+	function ( $repo ) {
+		return ( $repo['open_issues'] ?? 0 ) > 0;
+	}
+);
+$repos_by_issues = array_slice( array_values( $repos_by_issues ), 0, 8 );
+
+// Prepare open vs closed comparison data.
+$closed_by_repo        = $stats['closed_issues_by_repo'] ?? array();
+$issues_compare_repos  = array();
+$open_issues_compare   = array();
+$closed_issues_compare = array();
+if ( ! empty( $closed_by_repo ) ) {
+	foreach ( $closed_by_repo as $repo_name => $closed_count ) {
+		// Find open issues for this repo.
+		$open_count = 0;
+		foreach ( $stats['top_repos'] ?? array() as $repo ) {
+			if ( $repo['name'] === $repo_name ) {
+				$open_count = $repo['open_issues'] ?? 0;
+				break;
+			}
+		}
+		$issues_compare_repos[]  = $repo_name;
+		$open_issues_compare[]   = $open_count;
+		$closed_issues_compare[] = $closed_count;
+	}
+}
+
 echo wp_json_encode(
 	array(
 		'github' => array(
-			'repos'          => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'name' ),
-			'stars'          => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'stars' ),
-			'forksRepos'     => array_column( $top_by_forks, 'name' ),
-			'forks'          => array_column( $top_by_forks, 'forks' ),
-			'downloadsRepos' => array_column( $release_dl_data, 'name' ),
-			'downloads'      => array_column( $release_dl_data, 'downloads' ),
-			'languages'      => array_keys( $languages_data ),
-			'languageCounts' => array_values( $languages_data ),
+			'repos'              => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'name' ),
+			'stars'              => array_column( array_slice( $stats['top_repos'] ?? array(), 0, 8 ), 'stars' ),
+			'forksRepos'         => array_column( $top_by_forks, 'name' ),
+			'forks'              => array_column( $top_by_forks, 'forks' ),
+			'downloadsRepos'     => array_column( $release_dl_data, 'name' ),
+			'downloads'          => array_column( $release_dl_data, 'downloads' ),
+			'languages'          => array_keys( $languages_data ),
+			'languageCounts'     => array_values( $languages_data ),
+			'issuesRepos'        => array_column( $repos_by_issues, 'name' ),
+			'openIssues'         => array_column( $repos_by_issues, 'open_issues' ),
+			'issuesCompareRepos' => $issues_compare_repos,
+			'openIssuesCompare'  => $open_issues_compare,
+			'closedIssues'       => $closed_issues_compare,
+			'contributors'       => array_column( $stats['top_contributors'] ?? array(), 'login' ),
+			'commits'            => array_column( $stats['top_contributors'] ?? array(), 'commits' ),
+			'additions'          => array_column( $stats['top_contributors'] ?? array(), 'additions' ),
+			'deletions'          => array_column( $stats['top_contributors'] ?? array(), 'deletions' ),
 		),
 	)
 );

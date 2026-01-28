@@ -412,10 +412,6 @@ class Admin {
 							<td><code>[bmlt_stats type="wordpress"]</code></td>
 							<td><?php esc_html_e( 'WordPress plugin stats only', 'bmlt-enabled-stats' ); ?></td>
 						</tr>
-						<tr>
-							<td><code>[bmlt_stats type="meetings"]</code></td>
-							<td><?php esc_html_e( 'BMLT meeting stats only', 'bmlt-enabled-stats' ); ?></td>
-						</tr>
 					</tbody>
 				</table>
 			</div>

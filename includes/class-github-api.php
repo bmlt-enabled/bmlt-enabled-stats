@@ -209,12 +209,21 @@ class GitHub_API {
 		// Fetch release downloads for top repos.
 		$release_data = $this->fetch_release_downloads( $processed_repos );
 
+		// Fetch closed issues for top repos.
+		$closed_issues_by_repo = $this->fetch_closed_issues_count( $top_repos );
+
+		// Fetch top contributors across repos.
+		$top_contributors = $this->fetch_top_contributors( $top_repos );
+
 		return array(
 			'total_repos'             => count( $processed_repos ),
 			'total_stars'             => $total_stars,
 			'total_forks'             => $total_forks,
 			'total_open_issues'       => $total_open_issues,
+			'total_closed_issues'     => array_sum( $closed_issues_by_repo ),
+			'closed_issues_by_repo'   => $closed_issues_by_repo,
 			'total_contributors'      => $this->get_contributor_count(),
+			'top_contributors'        => $top_contributors,
 			'total_release_downloads' => $release_data['total'],
 			'release_downloads'       => $release_data['per_repo'],
 			'languages'               => $languages,
@@ -266,10 +275,11 @@ class GitHub_API {
 	/**
 	 * Make an authenticated request to GitHub API
 	 *
-	 * @param string $url The URL to request.
+	 * @param string $url          The URL to request.
+	 * @param bool   $allow_202    Whether to accept HTTP 202 (stats endpoints return this while computing).
 	 * @return array|\WP_Error
 	 */
-	private function make_request( $url ) {
+	private function make_request( $url, $allow_202 = false ) {
 		$args = array(
 			'timeout'    => 30,
 			'user-agent' => 'BMLT-Enabled-Stats-Plugin/' . BLST_VERSION,
@@ -290,8 +300,13 @@ class GitHub_API {
 			return $response;
 		}
 
-		$code = wp_remote_retrieve_response_code( $response );
-		if ( 200 !== $code ) {
+		$code        = wp_remote_retrieve_response_code( $response );
+		$valid_codes = array( 200 );
+		if ( $allow_202 ) {
+			$valid_codes[] = 202;
+		}
+
+		if ( ! in_array( $code, $valid_codes, true ) ) {
 			return new \WP_Error(
 				'github_api_error',
 				sprintf( 'GitHub API returned status %d', $code )
@@ -312,7 +327,10 @@ class GitHub_API {
 			'total_stars'             => 0,
 			'total_forks'             => 0,
 			'total_open_issues'       => 0,
+			'total_closed_issues'     => 0,
+			'closed_issues_by_repo'   => array(),
 			'total_contributors'      => 0,
+			'top_contributors'        => array(),
 			'total_release_downloads' => 0,
 			'release_downloads'       => array(),
 			'languages'               => array(),
@@ -322,6 +340,123 @@ class GitHub_API {
 			'fetched_at'              => null,
 			'error'                   => true,
 		);
+	}
+
+	/**
+	 * Fetch top contributors across top repos with detailed stats
+	 *
+	 * Uses /stats/contributors endpoint to get additions/deletions.
+	 * Limited to top 8 repos to avoid excessive API calls.
+	 * Note: GitHub returns 202 while computing stats, so we retry once after a delay.
+	 *
+	 * @param array $repos List of repos to fetch contributors for.
+	 * @return array Top 10 contributors with login, commits, additions, deletions, and avatar_url.
+	 */
+	private function fetch_top_contributors( $repos ) {
+		$all_contributors = array();
+		$repos_to_check   = array_slice( $repos, 0, 8 );
+
+		foreach ( $repos_to_check as $repo ) {
+			// Use stats/contributors endpoint for detailed data.
+			$url      = self::API_BASE . '/repos/' . self::ORG_NAME . '/' . $repo['name'] . '/stats/contributors';
+			$response = $this->make_request( $url, true ); // Allow 202.
+
+			if ( is_wp_error( $response ) ) {
+				continue;
+			}
+
+			// If 202, GitHub is computing stats - wait and retry once.
+			$code = wp_remote_retrieve_response_code( $response );
+			if ( 202 === $code ) {
+				sleep( 2 ); // Wait 2 seconds for GitHub to compute.
+				$response = $this->make_request( $url, true );
+				if ( is_wp_error( $response ) ) {
+					continue;
+				}
+			}
+
+			$contributors = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( ! is_array( $contributors ) ) {
+				continue;
+			}
+
+			foreach ( $contributors as $contrib ) {
+				$login = $contrib['author']['login'] ?? '';
+				if ( empty( $login ) ) {
+					continue;
+				}
+
+				// Sum up additions, deletions, and commits from all weeks.
+				$additions = 0;
+				$deletions = 0;
+				$commits   = 0;
+				foreach ( $contrib['weeks'] ?? array() as $week ) {
+					$additions += $week['a'] ?? 0;
+					$deletions += $week['d'] ?? 0;
+					$commits   += $week['c'] ?? 0;
+				}
+
+				if ( ! isset( $all_contributors[ $login ] ) ) {
+					$all_contributors[ $login ] = array(
+						'login'      => $login,
+						'commits'    => 0,
+						'additions'  => 0,
+						'deletions'  => 0,
+						'avatar_url' => $contrib['author']['avatar_url'] ?? '',
+					);
+				}
+				$all_contributors[ $login ]['commits']   += $commits;
+				$all_contributors[ $login ]['additions'] += $additions;
+				$all_contributors[ $login ]['deletions'] += $deletions;
+			}
+		}
+
+		// Sort by total lines changed (additions + deletions) descending.
+		usort(
+			$all_contributors,
+			function ( $a, $b ) {
+				$a_total = $a['additions'] + $a['deletions'];
+				$b_total = $b['additions'] + $b['deletions'];
+				return $b_total - $a_total;
+			}
+		);
+
+		return array_slice( $all_contributors, 0, 10 );
+	}
+
+	/**
+	 * Fetch closed issues count for repos using GitHub search API
+	 *
+	 * Limited to top 10 repos to avoid excessive API calls.
+	 *
+	 * @param array $repos List of repos to fetch closed issues for.
+	 * @return array Associative array of repo name => closed count.
+	 */
+	private function fetch_closed_issues_count( $repos ) {
+		$closed_counts  = array();
+		$repos_to_check = array_slice( $repos, 0, 10 );
+
+		foreach ( $repos_to_check as $repo ) {
+			// Use search API to count closed issues.
+			$url = self::API_BASE . '/search/issues';
+			$url = add_query_arg(
+				array(
+					'q'        => 'repo:' . self::ORG_NAME . '/' . $repo['name'] . ' type:issue state:closed',
+					'per_page' => 1,
+				),
+				$url
+			);
+
+			$response = $this->make_request( $url );
+
+			if ( ! is_wp_error( $response ) ) {
+				$data                           = json_decode( wp_remote_retrieve_body( $response ), true );
+				$closed_counts[ $repo['name'] ] = $data['total_count'] ?? 0;
+			}
+		}
+
+		return $closed_counts;
 	}
 
 	/**

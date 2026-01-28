@@ -140,6 +140,16 @@
             if (data.github.languages && data.github.languages.length) {
                 createLanguagesChart(data.github);
             }
+            if (data.github.openIssues && data.github.openIssues.length) {
+                createOpenIssuesChart(data.github);
+            }
+            if (data.github.closedIssues && data.github.closedIssues.length) {
+                createOpenVsClosedChart(data.github);
+            }
+            if (data.github.contributors && data.github.contributors.length && data.github.additions) {
+                createContributorsChart(data.github);
+                createCommitsChart(data.github);
+            }
         }
 
         // WordPress charts
@@ -369,6 +379,299 @@
                                 var percentage = Math.round((context.parsed / total) * 100);
                                 return context.label + ': ' + context.parsed + ' repos (' + percentage + '%)';
                             }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create open issues horizontal bar chart
+     */
+    function createOpenIssuesChart(data) {
+        var canvas = document.getElementById('blst-open-issues-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        var labels = data.issuesRepos || [];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Open Issues',
+                    data: data.openIssues,
+                    backgroundColor: '#dba617',
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x.toLocaleString() + ' open issues';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create open vs closed issues grouped bar chart
+     */
+    function createOpenVsClosedChart(data) {
+        var canvas = document.getElementById('blst-open-vs-closed-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        var labels = data.issuesCompareRepos || [];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: data.openIssuesCompare,
+                        backgroundColor: '#dba617',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    },
+                    {
+                        label: 'Closed',
+                        data: data.closedIssues,
+                        backgroundColor: '#00a32a',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' issues';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create top contributors stacked horizontal bar chart (additions + deletions)
+     */
+    function createContributorsChart(data) {
+        var canvas = document.getElementById('blst-contributors-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        var labels = data.contributors || [];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Additions',
+                        data: data.additions,
+                        backgroundColor: '#00a32a',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    },
+                    {
+                        label: 'Deletions',
+                        data: data.deletions,
+                        backgroundColor: '#dc3545',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.x.toLocaleString() + ' lines';
+                            },
+                            afterBody: function(context) {
+                                var index = context[0].dataIndex;
+                                var commits = data.commits ? data.commits[index] : 0;
+                                return 'Commits: ' + commits.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                }
+                                if (value >= 1000) {
+                                    return (value / 1000).toFixed(0) + 'K';
+                                }
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Create top contributors commits horizontal bar chart
+     */
+    function createCommitsChart(data) {
+        var canvas = document.getElementById('blst-commits-chart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+
+        // Sort contributors by commits for this chart.
+        var combined = data.contributors.map(function(name, i) {
+            return {
+                name: name,
+                commits: data.commits[i],
+                additions: data.additions[i],
+                deletions: data.deletions[i]
+            };
+        });
+        combined.sort(function(a, b) { return b.commits - a.commits; });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: combined.map(function(item) { return item.name; }),
+                datasets: [{
+                    label: 'Commits',
+                    data: combined.map(function(item) { return item.commits; }),
+                    backgroundColor: '#0073aa',
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x.toLocaleString() + ' commits';
+                            },
+                            afterBody: function(context) {
+                                var item = combined[context[0].dataIndex];
+                                return [
+                                    'Lines added: ' + item.additions.toLocaleString(),
+                                    'Lines deleted: ' + item.deletions.toLocaleString()
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
                         }
                     }
                 }
