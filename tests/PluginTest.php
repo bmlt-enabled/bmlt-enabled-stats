@@ -16,14 +16,6 @@ use Mockery;
 class PluginTest extends TestCase {
 
 	/**
-	 * Set up test fixtures.
-	 */
-	protected function set_up() {
-		parent::set_up();
-		// Plugin classes are loaded in bootstrap.php.
-	}
-
-	/**
 	 * Test get_settings returns defaults when no options saved.
 	 */
 	public function test_get_settings_returns_defaults() {

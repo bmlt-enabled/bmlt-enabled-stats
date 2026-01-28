@@ -16,14 +16,6 @@ use Mockery;
 class AdminTest extends TestCase {
 
 	/**
-	 * Set up test fixtures.
-	 */
-	protected function set_up() {
-		parent::set_up();
-		// Plugin classes are loaded in bootstrap.php.
-	}
-
-	/**
 	 * Admin instance for tests.
 	 *
 	 * @var \BLST\Admin
