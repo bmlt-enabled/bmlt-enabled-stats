@@ -19,8 +19,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_number with values under 1000.
 	 */
 	public function test_format_number_under_thousand() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$result = \BLST\Shortcodes::format_number( 500 );
 		$this->assertEquals( '500', $result );
 
@@ -35,8 +33,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_number with thousands.
 	 */
 	public function test_format_number_thousands() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$result = \BLST\Shortcodes::format_number( 1000 );
 		$this->assertEquals( '1K', $result );
 
@@ -54,8 +50,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_number with millions.
 	 */
 	public function test_format_number_millions() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$result = \BLST\Shortcodes::format_number( 1000000 );
 		$this->assertEquals( '1M', $result );
 
@@ -70,8 +64,6 @@ class ShortcodesTest extends TestCase {
 	 * Test get_language_color returns correct colors.
 	 */
 	public function test_get_language_color() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$this->assertEquals( '#4F5D95', \BLST\Shortcodes::get_language_color( 'PHP' ) );
 		$this->assertEquals( '#f1e05a', \BLST\Shortcodes::get_language_color( 'JavaScript' ) );
 		$this->assertEquals( '#6e7681', \BLST\Shortcodes::get_language_color( 'Unknown' ) );
@@ -81,8 +73,6 @@ class ShortcodesTest extends TestCase {
 	 * Test get_language_color returns all known languages.
 	 */
 	public function test_get_language_color_all_languages() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$this->assertEquals( '#2b7489', \BLST\Shortcodes::get_language_color( 'TypeScript' ) );
 		$this->assertEquals( '#e34c26', \BLST\Shortcodes::get_language_color( 'HTML' ) );
 		$this->assertEquals( '#563d7c', \BLST\Shortcodes::get_language_color( 'CSS' ) );
@@ -99,8 +89,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_date returns Unknown for empty date.
 	 */
 	public function test_format_date_returns_unknown_for_empty() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$result = \BLST\Shortcodes::format_date( '' );
 		$this->assertEquals( 'Unknown', $result );
 
@@ -112,8 +100,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_date returns original date for invalid format.
 	 */
 	public function test_format_date_returns_original_for_invalid() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$invalid_date = 'not a date';
 		$result       = \BLST\Shortcodes::format_date( $invalid_date );
 		$this->assertEquals( $invalid_date, $result );
@@ -123,8 +109,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_date returns relative time for recent dates.
 	 */
 	public function test_format_date_returns_relative_time() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		// A date 5 days ago.
 		$recent_date = gmdate( 'Y-m-d H:i:s', time() - ( 5 * DAY_IN_SECONDS ) );
 
@@ -140,8 +124,6 @@ class ShortcodesTest extends TestCase {
 	 * Test format_date returns formatted date for older dates.
 	 */
 	public function test_format_date_returns_formatted_date() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		// A date 60 days ago.
 		$old_date = gmdate( 'Y-m-d H:i:s', time() - ( 60 * DAY_IN_SECONDS ) );
 
@@ -162,8 +144,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stars returns correct HTML for full stars.
 	 */
 	public function test_render_stars_returns_full_stars() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		// 100% rating = 5 full stars.
 		$result = \BLST\Shortcodes::render_stars( 100 );
 
@@ -177,8 +157,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stars returns correct HTML for partial stars.
 	 */
 	public function test_render_stars_returns_partial_stars() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		// 70% rating = 3.5 stars (3 full, 1 half, 1 empty).
 		$result = \BLST\Shortcodes::render_stars( 70 );
 
@@ -192,8 +170,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stars returns correct HTML for no stars.
 	 */
 	public function test_render_stars_returns_empty_stars() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		// 0% rating = 0 stars (all empty).
 		$result = \BLST\Shortcodes::render_stars( 0 );
 
@@ -206,8 +182,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stats returns HTML with template.
 	 */
 	public function test_render_stats_returns_html() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$plugin = Mockery::mock( 'BLST\Plugin' );
 		$plugin->shouldReceive( 'get_all_stats' )
 			->once()
@@ -245,8 +219,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stats with non-existent template type falls back to full.
 	 */
 	public function test_render_stats_with_nonexistent_type_uses_fallback() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$plugin = Mockery::mock( 'BLST\Plugin' );
 		$plugin->shouldReceive( 'get_all_stats' )
 			->once()
@@ -279,8 +251,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stats uses summary type correctly.
 	 */
 	public function test_render_stats_with_summary_type() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$plugin = Mockery::mock( 'BLST\Plugin' );
 		$plugin->shouldReceive( 'get_summary_stats' )
 			->once()
@@ -317,8 +287,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stats uses github type correctly.
 	 */
 	public function test_render_stats_with_github_type() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$github_api = Mockery::mock( 'BLST\GitHub_API' );
 		$github_api->shouldReceive( 'get_stats' )
 			->once()
@@ -358,8 +326,6 @@ class ShortcodesTest extends TestCase {
 	 * Test render_stats with theme attribute.
 	 */
 	public function test_render_stats_with_theme_attribute() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$plugin = Mockery::mock( 'BLST\Plugin' );
 		$plugin->shouldReceive( 'get_all_stats' )
 			->once()
@@ -393,8 +359,6 @@ class ShortcodesTest extends TestCase {
 	 * Test theme template override.
 	 */
 	public function test_render_stats_uses_theme_template_override() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-
 		$plugin = Mockery::mock( 'BLST\Plugin' );
 		$plugin->shouldReceive( 'get_all_stats' )
 			->once()

@@ -56,8 +56,6 @@ class SchedulerTest extends TestCase {
 	protected function set_up() {
 		parent::set_up();
 
-		require_once BLST_PLUGIN_DIR . 'includes/class-scheduler.php';
-
 		// Create mock plugin with mock components.
 		$this->plugin        = Mockery::mock( 'BLST\Plugin' );
 		$this->cache_manager = Mockery::mock( 'BLST\Cache_Manager' );

@@ -8,9 +8,6 @@
 // Composer autoloader (includes Brain Monkey).
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
-// Load our base test case.
-require_once __DIR__ . '/TestCase.php';
-
 // Define constants that WordPress would normally define.
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
@@ -53,3 +50,18 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
+
+// Load all plugin class files once at bootstrap.
+// This prevents "cannot redeclare class" errors when tests load files.
+require_once BLST_PLUGIN_DIR . 'includes/class-cache-manager.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-github-api.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-wordpress-api.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-bmlt-api.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-scheduler.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-block.php';
+require_once BLST_PLUGIN_DIR . 'includes/class-plugin.php';
+require_once BLST_PLUGIN_DIR . 'includes/functions.php';
+
+// Load our base test case.
+require_once __DIR__ . '/TestCase.php';

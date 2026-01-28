@@ -28,9 +28,6 @@ class GitHubApiTest extends TestCase {
 	protected function set_up() {
 		parent::set_up();
 
-		require_once BLST_PLUGIN_DIR . 'includes/class-cache-manager.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-github-api.php';
-
 		$this->cache_manager = Mockery::mock( 'BLST\Cache_Manager' );
 	}
 

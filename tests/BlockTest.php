@@ -35,8 +35,6 @@ class BlockTest extends TestCase {
 	protected function set_up() {
 		parent::set_up();
 
-		require_once BLST_PLUGIN_DIR . 'includes/class-block.php';
-
 		$this->plugin     = Mockery::mock( 'BLST\Plugin' );
 		$this->shortcodes = Mockery::mock( 'BLST\Shortcodes' );
 

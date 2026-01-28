@@ -37,16 +37,6 @@ class FunctionsTest extends TestCase {
 	 * Test blst_get_plugin_instance returns singleton.
 	 */
 	public function test_blst_get_plugin_instance_returns_singleton() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-cache-manager.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-github-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-wordpress-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-bmlt-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-scheduler.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-block.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-plugin.php';
-		require_once BLST_PLUGIN_DIR . 'includes/functions.php';
-
 		Functions\expect( 'get_option' )
 			->once()
 			->andReturn( array() );
@@ -67,16 +57,6 @@ class FunctionsTest extends TestCase {
 	 * Test blst_get_plugin_instance initializes plugin.
 	 */
 	public function test_blst_get_plugin_instance_initializes_plugin() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-cache-manager.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-github-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-wordpress-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-bmlt-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-scheduler.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-block.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-plugin.php';
-		require_once BLST_PLUGIN_DIR . 'includes/functions.php';
-
 		Functions\expect( 'get_option' )
 			->once()
 			->andReturn( array() );
@@ -99,9 +79,6 @@ class FunctionsTest extends TestCase {
 	 * Test blst_get_plugin_instance returns existing global.
 	 */
 	public function test_blst_get_plugin_instance_returns_existing_global() {
-		require_once BLST_PLUGIN_DIR . 'includes/class-plugin.php';
-		require_once BLST_PLUGIN_DIR . 'includes/functions.php';
-
 		// Set global manually.
 		$mock_plugin             = new \stdClass();
 		$mock_plugin->test_value = 'test';
