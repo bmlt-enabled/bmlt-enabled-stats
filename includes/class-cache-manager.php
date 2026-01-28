@@ -29,10 +29,9 @@ class Cache_Manager {
 	/**
 	 * Cache keys
 	 */
-	const KEY_GITHUB_ORG      = 'blst_github_org';
-	const KEY_GITHUB_REPOS    = 'blst_github_repos';
-	const KEY_WPORG_PLUGINS   = 'blst_wporg_plugins';
-	const KEY_BMLT_AGGREGATOR = 'blst_bmlt_aggregator';
+	const KEY_GITHUB_ORG    = 'blst_github_org';
+	const KEY_GITHUB_REPOS  = 'blst_github_repos';
+	const KEY_WPORG_PLUGINS = 'blst_wporg_plugins';
 
 	/**
 	 * Constructor
@@ -95,7 +94,6 @@ class Cache_Manager {
 			self::KEY_GITHUB_ORG,
 			self::KEY_GITHUB_REPOS,
 			self::KEY_WPORG_PLUGINS,
-			self::KEY_BMLT_AGGREGATOR,
 		);
 
 		foreach ( $keys as $key ) {
@@ -106,18 +104,10 @@ class Cache_Manager {
 	/**
 	 * Get cache duration for a specific key
 	 *
-	 * @param string $key Cache key.
+	 * @param string $key Cache key (unused, kept for future extensibility).
 	 * @return int Duration in seconds.
 	 */
-	private function get_cache_duration( $key ) {
-		// BMLT data has shorter cache duration.
-		if ( self::KEY_BMLT_AGGREGATOR === $key ) {
-			return isset( $this->settings['bmlt_cache_duration'] )
-				? (int) $this->settings['bmlt_cache_duration']
-				: 12 * HOUR_IN_SECONDS;
-		}
-
-		// Default cache duration for other data.
+	private function get_cache_duration( $key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		return isset( $this->settings['cache_duration'] )
 			? (int) $this->settings['cache_duration']
 			: BLST_DEFAULT_CACHE_DURATION;
@@ -135,7 +125,6 @@ class Cache_Manager {
 			self::KEY_GITHUB_ORG,
 			self::KEY_GITHUB_REPOS,
 			self::KEY_WPORG_PLUGINS,
-			self::KEY_BMLT_AGGREGATOR,
 		);
 
 		$status = array();

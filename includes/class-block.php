@@ -125,8 +125,6 @@ class Block {
 		$summary = $this->plugin->get_summary_stats();
 
 		return array(
-			'total_meetings'        => $summary['total_meetings'] ?? 39000,
-			'root_servers'          => $summary['root_servers'] ?? 42,
 			'total_github_stars'    => $summary['total_github_stars'] ?? 150,
 			'total_downloads'       => $summary['total_downloads'] ?? 500000,
 			'total_active_installs' => $summary['total_active_installs'] ?? 10000,

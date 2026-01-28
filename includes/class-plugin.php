@@ -32,13 +32,6 @@ class Plugin {
 	public $wordpress_api;
 
 	/**
-	 * BMLT API handler instance
-	 *
-	 * @var BMLT_API
-	 */
-	public $bmlt_api;
-
-	/**
 	 * Cache manager instance
 	 *
 	 * @var Cache_Manager
@@ -113,7 +106,6 @@ class Plugin {
 		require_once BLST_PLUGIN_DIR . 'includes/class-cache-manager.php';
 		require_once BLST_PLUGIN_DIR . 'includes/class-github-api.php';
 		require_once BLST_PLUGIN_DIR . 'includes/class-wordpress-api.php';
-		require_once BLST_PLUGIN_DIR . 'includes/class-bmlt-api.php';
 		require_once BLST_PLUGIN_DIR . 'includes/class-scheduler.php';
 		require_once BLST_PLUGIN_DIR . 'includes/class-shortcodes.php';
 		require_once BLST_PLUGIN_DIR . 'includes/class-block.php';
@@ -129,7 +121,6 @@ class Plugin {
 		// Initialize API handlers.
 		$this->github_api    = new GitHub_API( $this->cache_manager, $this->settings );
 		$this->wordpress_api = new WordPress_API( $this->cache_manager, $this->settings );
-		$this->bmlt_api      = new BMLT_API( $this->cache_manager, $this->settings );
 
 		// Initialize scheduler.
 		$this->scheduler = new Scheduler( $this );
@@ -206,7 +197,6 @@ class Plugin {
 		return array(
 			'github'    => $this->github_api->get_stats( $force_refresh ),
 			'wordpress' => $this->wordpress_api->get_stats( $force_refresh ),
-			'bmlt'      => $this->bmlt_api->get_stats( $force_refresh ),
 			'updated'   => current_time( 'mysql' ),
 		);
 	}
@@ -219,7 +209,6 @@ class Plugin {
 	public function get_summary_stats() {
 		$github    = $this->github_api->get_stats();
 		$wordpress = $this->wordpress_api->get_stats();
-		$bmlt      = $this->bmlt_api->get_stats();
 
 		return array(
 			'total_github_stars'      => $github['total_stars'] ?? 0,

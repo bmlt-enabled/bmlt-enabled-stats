@@ -16,7 +16,6 @@ BMLT Enabled Stats is a WordPress plugin that displays statistics about BMLT-ena
 - **API Handlers**:
   - `class-github-api.php` - Fetches repos from `github.com/bmlt-enabled` organization
   - `class-wordpress-api.php` - Queries plugins by author "bmltenabled" from WordPress.org API v1.2
-  - `class-bmlt-api.php` - Fetches meeting data from BMLT Tomato aggregator (currently unused in display)
 - **Shortcodes** (`includes/class-shortcodes.php`) - Registers `[bmlt_stats]` shortcode with type/theme attributes
 - **Scheduler** (`includes/class-scheduler.php`) - Handles WP-Cron for automatic 4-hour data refresh
 
@@ -37,7 +36,7 @@ All classes use the `BLST` namespace. Class files follow WordPress naming: `clas
 Located in `templates/`:
 - `stats-full.php` - Complete dashboard with hero cards, charts, plugin details
 - `stats-summary.php` - Hero cards only
-- `stats-github.php`, `stats-wordpress.php`, `stats-meetings.php` - Individual sections
+- `stats-github.php`, `stats-wordpress.php` - Individual sections
 
 Templates can be overridden by themes in `bmlt-enabled-stats/` directory.
 
@@ -58,7 +57,7 @@ Templates can be overridden by themes in `bmlt-enabled-stats/` directory.
 
 - `BLST_DEFAULT_CACHE_DURATION` - 4 hours (14400 seconds)
 - `BLST_TRANSIENT_PREFIX` - "blst_"
-- Cache keys: `blst_github_repos`, `blst_wporg_plugins`, `blst_bmlt_aggregator`
+- Cache keys: `blst_github_repos`, `blst_wporg_plugins`
 
 ## Shortcode Usage
 
@@ -74,7 +73,6 @@ Templates can be overridden by themes in `bmlt-enabled-stats/` directory.
 
 - **GitHub**: `https://api.github.com/orgs/bmlt-enabled/repos`
 - **WordPress.org**: `https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[author]=bmltenabled`
-- **BMLT Tomato**: `https://tomato.bmltenabled.org` (aggregator for meeting data)
 
 ## WordPress Hooks
 

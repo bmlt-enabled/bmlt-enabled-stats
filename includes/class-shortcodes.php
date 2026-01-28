@@ -99,9 +99,6 @@ class Shortcodes {
 			case 'WordPress':
 				return $this->plugin->wordpress_api->get_stats();
 
-			case 'meetings':
-				return $this->plugin->bmlt_api->get_stats();
-
 			case 'full':
 			default:
 				return $this->plugin->get_all_stats();
@@ -120,7 +117,6 @@ class Shortcodes {
 			'summary'   => 'stats-summary.php',
 			'github'    => 'stats-github.php',
 			'wordpress' => 'stats-wordpress.php',
-			'meetings'  => 'stats-meetings.php',
 		);
 
 		$file = $templates[ $type ] ?? 'stats-full.php';
