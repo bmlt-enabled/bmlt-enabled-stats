@@ -105,6 +105,15 @@ abstract class TestCase extends PolyfillTestCase {
 				'sanitize_text_field' => function ( $str ) {
 					return trim( strip_tags( $str ) );
 				},
+				'sanitize_key'        => function ( $key ) {
+					return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $key ) );
+				},
+				'absint'              => function ( $value ) {
+					return abs( (int) $value );
+				},
+				'sanitize_html_class' => function ( $css_class ) {
+					return preg_replace( '/[^A-Za-z0-9_-]/', '', $css_class );
+				},
 			)
 		);
 		// phpcs:enable WordPress.WP.AlternativeFunctions
